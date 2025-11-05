@@ -448,6 +448,67 @@ class Reranker:
                 batch_size=batch_size,
             )
             print(f"Completed loading {model_path}")
+        elif "swerank" in model_path.lower():
+            # SweRank models for text and code reranking
+            print(f"Loading SweRank model: {model_path} ...")
+
+            from rank_llm.rerank.listwise.swerank_reranker import SweRankReranker
+
+            keys_and_defaults = [
+                ("context_size", 4096),
+                ("prompt_template_path", None),  # Will be set based on rerank_type
+                ("num_few_shot_examples", 0),
+                ("few_shot_file", None),
+                ("device", "cuda"),
+                ("num_gpus", 1),
+                ("window_size", 20),
+                ("stride", 10),
+                ("batch_size", 32),
+                ("base_url", None),
+                ("rerank_type", "text"),  # "text" or "code"
+                ("code_prompt_type", "github_issue"),
+            ]
+
+            [
+                context_size,
+                prompt_template_path,
+                num_few_shot_examples,
+                few_shot_file,
+                device,
+                num_gpus,
+                window_size,
+                stride,
+                batch_size,
+                base_url,
+                rerank_type,
+                code_prompt_type,
+            ] = extract_kwargs(keys_and_defaults, **kwargs)
+
+            # Select appropriate template based on rerank_type if not provided
+            if prompt_template_path is None:
+                if rerank_type == "code":
+                    prompt_template_path = TEMPLATES / "swerank_github_issue_template.yaml"
+                else:
+                    prompt_template_path = TEMPLATES / "swerank_text_template.yaml"
+
+            model_coordinator = SweRankReranker(
+                model=model_path,
+                name=model_path,
+                context_size=context_size,
+                prompt_template_path=prompt_template_path,
+                num_few_shot_examples=num_few_shot_examples,
+                few_shot_file=few_shot_file,
+                device=device,
+                num_gpus=num_gpus,
+                window_size=window_size,
+                stride=stride,
+                batch_size=batch_size,
+                base_url=base_url,
+                rerank_type=rerank_type,
+                code_prompt_type=code_prompt_type,
+            )
+
+            print(f"Completed loading {model_path}")
         elif model_path in ["unspecified", "rank_random", "rank_identity"]:
             # NULL reranker
             model_coordinator = None

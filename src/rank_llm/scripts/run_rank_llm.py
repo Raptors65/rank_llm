@@ -48,6 +48,8 @@ def main(args):
     use_alpha = args.use_alpha
     sglang_batched = args.sglang_batched
     tensorrt_batched = args.tensorrt_batched
+    rerank_type = args.rerank_type
+    code_prompt_type = args.code_prompt_type
 
     _ = retrieve_and_rerank(
         model_path=model_path,
@@ -82,6 +84,8 @@ def main(args):
         use_alpha=use_alpha,
         sglang_batched=sglang_batched,
         tensorrt_batched=tensorrt_batched,
+        rerank_type=rerank_type,
+        code_prompt_type=code_prompt_type,
     )
 
 
@@ -259,6 +263,20 @@ if __name__ == "__main__":
         "--tensorrt_batched",
         action="store_true",
         help="whether to run the model in batches using tensorrtllm backend",
+    )
+    parser.add_argument(
+        "--rerank_type",
+        type=str,
+        default="text",
+        choices=["text", "code"],
+        help="Type of reranking: 'text' for standard passages, 'code' for GitHub issues (SweRank models only)",
+    )
+    parser.add_argument(
+        "--code_prompt_type",
+        type=str,
+        default="github_issue",
+        choices=["github_issue"],
+        help="Prompt type for code reranking (SweRank models only)",
     )
     args = parser.parse_args()
     main(args)
